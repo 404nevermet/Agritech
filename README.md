@@ -118,5 +118,5 @@ Kepping the extensibility in mind each Request/Response/Command type is named at
                 status: <COMMAND_SUCCESS/COMMAND_FAILED>
             }
 
-###  Design
+###  Simulator Design
 [TBD]
