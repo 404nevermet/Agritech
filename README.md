@@ -111,7 +111,7 @@ Kepping the extensibility in mind each Request/Response/Command type is named at
   * Set State Response: Sprinker responds with SUCCESS or FAILED to aws core for set state command
     * Topic :
 
-            actuator/command/set-state/zoneId
+            actuator/response/set-state/zoneId
     * Payload
 
             {
