@@ -1,0 +1,156 @@
+{
+	"AWSTemplateFormatVersion":"2010-09-09",
+	"Description":"AWS CloudFormation for M03P02",
+"Resources":{
+	"M03P02VPC": {
+            "Type": "AWS::EC2::VPC",
+            "Properties": {
+            "CidrBlock": "10.0.0.0/16",
+            "EnableDnsHostnames" : "true", 
+            "EnableDnsSupport" : "true",
+            "Tags" : [ {"Key" : "Name", "Value" : "M03P02VPC"} ]
+            }
+        },
+	"M03P02Subnet": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "M03P02VPC"
+                },
+                "Tags" : [ {"Key" : "Name", "Value" : "M03P02Subnet"} ],
+                "CidrBlock" : "10.0.1.0/24",
+                  "AvailabilityZone" : "us-east-1a",
+                  "MapPublicIpOnLaunch" : "true"
+            }
+        },
+	"M03P02SG": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "M03P02VPC"
+                },
+                "GroupDescription": "Allows HTTP and SSH",
+                "Tags" : [ {"Key" : "Name", "Value" : "M03P02SG"} ]
+            }
+        },
+	"M03P02EC2Instance": {
+            "Type": "AWS::EC2::Instance",
+            "Properties": {
+                "InstanceType" : "t2.micro",
+                "ImageId" : "ami-048f6ed62451373d9",
+                "KeyName" : "M03P02KeyPair",
+                "NetworkInterfaces": [
+                    {
+                        "SubnetId": {
+                            "Ref": "M03P02Subnet"
+                        },
+                        "GroupSet": [{ "Ref" : "M03P02SG" }],
+                        "DeviceIndex": "0",
+                        "DeleteOnTermination": "true"
+                    }
+                ],
+                "Tags" : [ {"Key" : "Name", "Value" : "M03P02EC2Instance"} ]
+            }
+        },
+	"M03P02RawDataStream": { 
+			"Type": "AWS::Kinesis::Stream", 
+			"Properties": {
+				"Name": "m03p02_raw_data_stream", 
+				"RetentionPeriodHours" : 24, 
+				"ShardCount": 1,
+				"Tags": [ {"Key": "Name", "Value": "M03P02RawDataStream" } ] 
+			} 
+		},
+	"M03P02AnomalyData" : {
+              "Type" : "AWS::DynamoDB::Table",
+              "Properties" : {
+				  "AttributeDefinitions" : [
+                       {
+                          "AttributeName" : "deviceid",
+                          "AttributeType" : "S"
+                    }, 
+                    {
+                          "AttributeName" : "timestamp",
+                          "AttributeType" : "S"
+                    }
+                   ],
+                  "KeySchema" : [
+                      {
+                        "AttributeName": "deviceid",
+                        "KeyType": "HASH"
+                    },
+                    {
+                        "AttributeName": "timestamp",
+                        "KeyType": "RANGE"
+                    }
+                ],
+                  "TableName" : "m03p02_anomaly_data",
+                  "Tags" : [ {"Key" : "Name", "Value" : "M03P02AnomalyData"} ],
+                  "ProvisionedThroughput": {
+                    "ReadCapacityUnits": 5,
+                    "WriteCapacityUnits": 5
+                }
+            }
+        },
+	"M03P02SNSTopic" : {
+			"Type" : "AWS::SNS::Topic",
+			"Properties" : {
+			"TopicName" : "M03P02SNSTopic"
+			}
+		},
+	"M03P02Subscription" : {
+			"Type" : "AWS::SNS::Subscription",
+			"Properties" : {
+			"Endpoint" : "naginaren310@gmail.com",
+			"Protocol" : "email",
+			"TopicArn" : { "Ref" : "M03P02SNSTopic" }
+			}
+		},
+	"M03P02S3Bucket": {
+            "Type": "AWS::S3::Bucket",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+                "BucketName": "m03p02s3bucketnagi"
+            }
+        },
+	"M03P02Lambda": {
+			"Type": "AWS::Lambda::Function",
+			"Properties": {
+				"FunctionName": "M03P02Lambda",
+                "Role": { "Fn::Sub": "arn:aws:iam::576509188261:role/service-role/StockPriceRoleForLambda" },
+                "Runtime": "python3.7",
+                "Handler": "index.my_handler",
+				"Code":{
+					"ZipFile":"from pprint import pprint\n import boto3\n import json\n import csv\n import datetime\n import os\n import random\n import base64\n from decimal import Decimal\n from botocore.exceptions import ClientError\n def lambda_handler(event, contex\n AWS_REGION = 'us-east-1'\n #print(event)\n dynamodb_res = boto3.resource('dynamodb', region_name=AWS_REGION)\n anomaly_table = dynamodb_res.Table('m03p02_anomaly_data')\n sns_client = boto3.client('sns', region_name=AWS_REGION)\n topic_arn = 'arn:aws:sns:us-east-1:576509188261:M03P02SNSTopic'
+
+    for record in event['Records']:
+        data_point = base64.b64decode(record['kinesis']['data'])
+        data_point = str(data_point, 'utf-8')
+        pprint(data_point, sort_dicts=False)
+        data_point = json.loads(data_point)
+        anomaly_type = ''
+        if data_point["value"] <= (1.01 * float(data_point['lowest_temp'])):
+            anomaly_type = "Cold"
+        elif data_point["value"] >= (0.99 * float(data_point['highest_temp'])):
+            anomaly_type = "Hot"
+
+        anomaly_data = {'deviceid': data_point["deviceid"], 
+                            'anomalyDate': data_point["date"], 
+                            'timestamp': data_point["timestamp"], 
+                            'value': data_point["value"],
+                            'anomalyType': anomaly_type}
+
+        if len(anomaly_type) != 0:
+            anomaly_data = json.loads(json.dumps(anomaly_data), parse_float=Decimal)
+            response = anomaly_table.put_item(Item=anomaly_data)
+            #pprint("DB Response Data: ", response)
+            sns_client.publish(TopicArn=topic_arn, 
+                                Message=str("Anomaly value = " + str(anomaly_data['value']) + " is detected. " + "Detcted temperature can be categorized as " + anomaly_data['anomalyType']) , 
+                                Subject=str(anomaly_data['anomalyType'] + " temperature is detected.")
+                                )
+    return 1"
+				}
+			}
+		}
+	}	
+}
