@@ -17,7 +17,7 @@ class SoilSensor(Simulator):
                          lattitude, longitude, zoneId)
 
         # Create Schedular and start publishing simulationn data
-        self._schedular = Schedular(self, 1)
+        self._schedular = Schedular(self, self._data_generation_frequency)
 
     def get_default_message(self):
         message = {}
@@ -54,11 +54,12 @@ class SoilSensor(Simulator):
     def read_config(self):
         self._config = ConfigReader.get_config(
             ApplicationConstants.CONFIG_SOILSENSOR_FILE)
-        self._min = self._config[ApplicationConstants.SENSOR_CONFIG_PARAMETER][ApplicationConstants.SENSOR_CONFIG_PARAMETER_MIN]
-        self._max = self._config[ApplicationConstants.SENSOR_CONFIG_PARAMETER][ApplicationConstants.SENSOR_CONFIG_PARAMETER_MAX]
-        self._mean = self._config[ApplicationConstants.SENSOR_CONFIG_PARAMETER][ApplicationConstants.SENSOR_CONFIG_PARAMETER_MEAN]
-        self._standardDeviation = self._config[ApplicationConstants.SENSOR_CONFIG_PARAMETER][
+        self._min = self._config[ApplicationConstants.SENSOR_CONFIG_PARAMETER_MOISTURE_DATA][ApplicationConstants.SENSOR_CONFIG_PARAMETER_MIN]
+        self._max = self._config[ApplicationConstants.SENSOR_CONFIG_PARAMETER_MOISTURE_DATA][ApplicationConstants.SENSOR_CONFIG_PARAMETER_MAX]
+        self._mean = self._config[ApplicationConstants.SENSOR_CONFIG_PARAMETER_MOISTURE_DATA][ApplicationConstants.SENSOR_CONFIG_PARAMETER_MEAN]
+        self._standardDeviation = self._config[ApplicationConstants.SENSOR_CONFIG_PARAMETER_MOISTURE_DATA][
             ApplicationConstants.SENSOR_CONFIG_PARAMETER_STANDARD_DEVIATION]
+        self._data_generation_frequency = self._config[ApplicationConstants.SENSOR_CONFIG_PARAMETER_DATA_GENERATION_FREQUENCY]
 
     # All the subscriptions that device is interested in.
     def _subscribe_to_required_topics(self):

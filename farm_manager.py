@@ -65,7 +65,7 @@ class FarmManager:
 
 
 def main():
-    farmManager = FarmManager(10,2)
+    farmManager = FarmManager(1,1)
     farmManager.execute()
 
 

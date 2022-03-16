@@ -15,12 +15,13 @@ class ApplicationConstants:
     CONFIG_PARAMETER_CA_CERT_PATH = "caCertPath"
     CONFIG_PARAMETER_PRIVATE_KEY_PATH = "privateKeyPath"
 
-    SENSOR_CONFIG_PARAMETER = "moisture"
+
+    SENSOR_CONFIG_PARAMETER_MOISTURE_DATA = "moistureData"
     SENSOR_CONFIG_PARAMETER_MIN = "min"
     SENSOR_CONFIG_PARAMETER_MAX = "max"
     SENSOR_CONFIG_PARAMETER_MEAN = "mean"
     SENSOR_CONFIG_PARAMETER_STANDARD_DEVIATION = "standardDeviation"
-   
+    SENSOR_CONFIG_PARAMETER_DATA_GENERATION_FREQUENCY = "dataGenerationFrequency"
     # Message fileds
     FIELD_STATE = "state"
 

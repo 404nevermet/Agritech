@@ -21,7 +21,7 @@ class Schedular:
 
                 nextSecond += self._frequency
 
-                self._scheduler.run()
+                self._scheduler.run(blocking=True)
             except KeyboardInterrupt:
                 break
     
