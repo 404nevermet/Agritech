@@ -21,7 +21,7 @@ class FarmManager:
             self._devices.append(soilMoistureSensor)
 
     def create_sprinkler_devices(self):
-        for count in range(0, self._soil_censors_count):
+        for count in range(0, self._sprinkler_count):
             deviceId = "SLR-00{}".format(count)
             sprinkler = Sprinkler(deviceId, 1, 1, 1)
             self._devices.append(sprinkler)
@@ -65,7 +65,7 @@ class FarmManager:
 
 
 def main():
-    farmManager = FarmManager(1,1)
+    farmManager = FarmManager(10,2)
     farmManager.execute()
 
 

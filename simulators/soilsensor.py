@@ -51,6 +51,9 @@ class SoilSensor(Simulator):
     def subscribe(self, topic, callback):
         return super().subscribe(topic, callback)
 
+    def register(self):
+        super().register()
+
     def read_config(self):
         self._config = ConfigReader.get_config(
             ApplicationConstants.CONFIG_SOILSENSOR_FILE)
@@ -70,6 +73,9 @@ class SoilSensor(Simulator):
 
     def get_telemety_data_topic(self):
         return SoilSensorTopicHelper.get_telemetry_data_topic()
+
+    def get_register_device_topic(self, deviceId):
+        return SoilSensorTopicHelper.get_register_request_topic(deviceId)
 
     def _get_sensed_parameter(self):
         return round(float(random.normalvariate(self._mean, self._standardDeviation)), 1)
@@ -100,5 +106,3 @@ class SoilSensor(Simulator):
         # return print("{}".format(self._message))
         return json.dumps(message)
 
-    def _get_timestamp(self):
-        return datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")

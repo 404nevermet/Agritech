@@ -1,4 +1,5 @@
 
+import json
 from common.schedular import Schedular
 from common.application_constants import ApplicationConstants
 from common.config_reader import ConfigReader
@@ -37,6 +38,9 @@ class Sprinkler(Simulator):
     def subscribe(self, topic, callback):
         return super().subscribe(topic, callback)
 
+    def register(self):
+        super().register()
+
     def read_config(self):
         self._config = ConfigReader.get_config(
             ApplicationConstants.CONFIG_SPRINKLER_FILE)
@@ -51,6 +55,9 @@ class Sprinkler(Simulator):
         # Commands to set state
         self.subscribe(SprinklerTopicHelper.get_set_state_command_topic(
             self._zone_id), self.onCommand)
+
+    def get_register_device_topic(self, deviceId):
+        return SprinklerTopicHelper.get_register_request_topic(deviceId)
 
     # Callbacks
     def onCommand(self, client, userdata, message):

@@ -2,7 +2,7 @@
 import json
 from common.mqtt_client import MQTTClient
 import threading
-
+import datetime
 
 class Simulator(threading.Thread):
     def __init__(self, deviceId, deviceType, lattitude, longitude, zoneId) -> None:
@@ -25,6 +25,8 @@ class Simulator(threading.Thread):
         if(self.connect()):
            # On successfull connect  subscribe to all required topics to communicate with IoT Core
            self._subscribe_to_required_topics()
+           # Register device
+           self.register()
 
     def get_divice_id(self):
         return self._device_id
@@ -56,6 +58,22 @@ class Simulator(threading.Thread):
     def subscribe(self, topic, callback):
         self._mqtt_client.subscribe(topic, callback)
 
+    def register(self):
+        timestamp = self._get_timestamp()
+        message = {}
+        message["deviceId"] = self._device_id
+        message["deviceType"] = self._device_type
+        message["lattitude"] = self._lattitude
+        message["longitude"] = self._longitude
+        message["zoneId"] = self._zone_id
+        message["timestamp"] = timestamp
+
+        topic = self.get_register_device_topic(self._device_id)
+        serialized_message = json.dumps(message)
+        print("Registering device : {}".format(self._device_id))
+        print("Register message: {}".format(serialized_message))
+        self.publish(topic, serialized_message)
+
     def read_config(self):
         pass
 
@@ -71,5 +89,11 @@ class Simulator(threading.Thread):
     def _subscribe_to_required_topics(self):
         pass
 
+    def get_register_device_topic(self, deviceId):
+        pass
+
     def _get_payload(self, message):
         return json.loads(message.payload.decode("utf-8"))
+
+    def _get_timestamp(self):
+        return datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")

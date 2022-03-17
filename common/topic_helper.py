@@ -33,8 +33,8 @@ class DataType:
 # This basically localize the changes in case we need changes to topic structure
 class SoilSensorTopicHelper:
     @staticmethod
-    def get_register_request_topic():
-        return "{}{}".format(Topics.SENSOR_REQUEST, RequestType.REQUEST_REGISTER)
+    def get_register_request_topic(deviceId):
+        return "{}{}/{}".format(Topics.SENSOR_REQUEST, RequestType.REQUEST_REGISTER,deviceId)
 
     @staticmethod
     def get_register_request_reponse_topic(device_id):
@@ -49,8 +49,8 @@ class SoilSensorTopicHelper:
 # This basically localize the changes in case we need changes to topic structure
 class SprinklerTopicHelper:
     @staticmethod
-    def get_register_request_topic():
-        return "{}{}".format(Topics.ACTUATOR_REQUEST, RequestType.REQUEST_REGISTER)
+    def get_register_request_topic(deviceId):
+        return "{}{}/{}".format(Topics.ACTUATOR_REQUEST, RequestType.REQUEST_REGISTER, deviceId)
 
     @staticmethod
     def get_register_request_reponse_topic(zone_id):
