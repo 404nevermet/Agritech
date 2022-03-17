@@ -87,15 +87,16 @@ class SoilSensor(Simulator):
         {
             deviceId:<Device Id>,
             deviceType: <Device Type>,
-            temperatur:<Temperatur>,
-            humidity:<Humidity>
+            dataType: 'SoilHumidity',
+            value:<Humidity>,
+            timestamp: <Timestamp>
         }
         """
         timestamp = self._get_timestamp()
         message = {}
         message["deviceId"] = self._device_id
         message["deviceType"] = self._device_type
-        message['datatype'] = 'SoilHumidity'
+        message['dataType'] = 'SoilHumidity'
         message["value"] = self._get_sensed_parameter()
         message["timestamp"] = timestamp
 
