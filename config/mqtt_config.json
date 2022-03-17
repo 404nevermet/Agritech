@@ -1,0 +1,7 @@
+{
+    "host": "a174rfzs28ffuq-ats.iot.us-east-1.amazonaws.com",
+    "port": 8883,
+    "rootCAPath": "E:\\Development\\IITMadras\\Course\\certs\\AmazonRootCA1.pem",
+    "caCertPath": "E:\\Development\\IITMadras\\Course\\certs\\sensor-device-certificate.pem.crt",
+    "privateKeyPath": "E:\\Development\\IITMadras\\Course\\certs\\sensor-private.pem.key"
+}

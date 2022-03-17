@@ -1,0 +1,9 @@
+{
+    "dataGenerationFrequency": 5,
+    "moistureData": {
+        "min": 0,
+        "max": 100,
+        "mean": 50,
+        "standardDeviation": 25
+    }
+}
