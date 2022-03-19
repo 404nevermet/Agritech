@@ -173,6 +173,7 @@
 								"iot:Publish",
 								"iot:*",
                                 "kinesis:PutRecord",
+				"dynamodb:*",
                                 "logs:*",
 								"cloudwatch:PutMetricData"
                             ],
