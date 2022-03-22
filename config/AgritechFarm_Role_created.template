@@ -457,7 +457,7 @@
 							"PutItem" : {
 								"TableName" : {"Ref": "DeviceMetaDataTableName"}
 							},
-							"roleArn": { "Fn::GetAtt": ["DeviceMetaDataStorageRole", "Arn"] },
+							"roleArn": { "Fn::GetAtt": ["DeviceMetaDataStorageRole", "Arn"] }
 						}
 					}
 				]
