@@ -5,22 +5,83 @@ import boto3
 from botocore.exceptions import ClientError
 import logging
 from boto3.dynamodb.conditions import Key, Attr
-#import pandas as pd
+# import pandas as pd
 from datetime import datetime, timedelta
 from decimal import Decimal
+#from botocore.vendored import requests
+import requests
+import time
+from botocore.exceptions import ClientError
+#import datetime
+#from sqlite3 import Timestamp
 
 DBClient = boto3.client("dynamodb", region_name="us-east-1")
 DBResource = boto3.resource("dynamodb", region_name="us-east-1")
 
+
+url = "https://api.openweathermap.org/data/2.5/weather"
+api_key = "e83b3c4c08285bf87b99f9bbc0abe3f0"
+lat = 25.774
+lon = -80.1937
+
+def get_aws_iot_ats_endpoint():
+    """
+    Get the "Data-ATS" endpoint instead of the
+    untrusted "Symantec" endpoint that's built-in.
+    """
+    iot_client = boto3.client(
+        "iot",
+        #aws_access_key_id=AWS_ACCESS_KEY_ID,
+        #aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+        #region_name= REGION_NAME,
+        verify=True
+    )
+    details = iot_client.describe_endpoint(endpointType="iot:Data-ATS")
+    host = details.get("endpointAddress")
+    return f"https://{host}"
+
+
+def get_weather_info(lat_value, lon_value):
+    response = requests.get(url, params={'lat': lat_value, 'lon': lon_value, 'units': 'metric', 'appid': api_key})
+    if response.status_code == 200:
+        data = response.json()
+        print(data)
+    else:
+        print("Invalid lat long")
+
+    degree = data.get('main').get('temp')
+    # print ("degree->", degree)
+    weather = data.get('weather')[0].get('main')
+    # print("weather->", weather)
+    weather_info = {'lat': lat_value, 'lon': lon_value, 'weather': weather, 'celsius': degree}
+    print(weather_info)
+    return weather_info
+
 def insertIntoAggrDynamoTable(db_name, newRecord):
     try:
         # print("calling put_item")
-        #print("newRecord->", newRecord)
+        # print("newRecord->", newRecord)
         logger = logging.getLogger('boto3.dynamodb.table')
         logger.setLevel(logging.DEBUG)
 
         save_status = DBClient.put_item(TableName=db_name, Item=newRecord)
-        #print(save_status)
+        # print(save_status)
+        return save_status
+    except ClientError as e:
+        # This error never happens.
+        print("ERROR")
+        print(e.response["Error"]['Message'])
+
+def insertIntoSprinklerDynamoTable(db_name, newRecord):
+    try:
+        # print("calling put_item")
+        # print("newRecord->", newRecord)
+        logger = logging.getLogger('boto3.dynamodb.table')
+        logger.setLevel(logging.DEBUG)
+
+        save_status = DBClient.put_item(TableName=db_name, Item=newRecord)
+        # print(save_status)
+        time.sleep(1)
         return save_status
     except ClientError as e:
         # This error never happens.
@@ -58,13 +119,124 @@ def checkAndCreateAggrTable(db_name):
                                           KeySchema=aggrKeySchema,
                                           ProvisionedThroughput=aggrProvisionedThroughput)
         DBTable.wait_until_exists()
-        print ("After Table Creation")
-        #return DBTable, DBClient, DBResource, DBName
+        print("After Table Creation")
+        # return DBTable, DBClient, DBResource, DBName
         return DBName
+
+def checkAndCreateSprinklerTable(db_name):
+    db_name = "sprinkler_status_on_events_table"
+    DBName = db_name
+    DBTable = None  # self._DBResource.Table(db_name)
+    listResponse = DBClient.list_tables()
+    tableList = listResponse['TableNames']
+    print(tableList)
+    if db_name in tableList:
+        DBTable = DBResource.Table(db_name)
+        print("Table already existing 2->", DBTable)
+    else:
+        DBTable = "sprinkler_status_on_events_table"
+        print("Table does not exist. Please create.->", DBTable)
+        # DBTable = None
+        aggrAttrDef = [
+            {"AttributeName": "zoneId", "AttributeType": "S"},
+            {"AttributeName": "currdateandtime", "AttributeType": "S"}
+        ]
+        aggrKeySchema = [
+            {"AttributeName": "zoneId", "KeyType": "HASH"},
+            {"AttributeName": "currdateandtime", "KeyType": "RANGE"}
+        ]
+        aggrProvisionedThroughput = {
+            "ReadCapacityUnits": 5,
+            "WriteCapacityUnits": 5
+        }
+        DBTable = DBResource.create_table(TableName=db_name,
+                                          AttributeDefinitions=aggrAttrDef,
+                                          KeySchema=aggrKeySchema,
+                                          ProvisionedThroughput=aggrProvisionedThroughput)
+        DBTable.wait_until_exists()
+        print("After Table Creation")
+        # return DBTable, DBClient, DBResource, DBName
+        return DBName
+
+def checkAndCreateSprinklerStateTable(db_name):
+    db_name = "sprinkler_zone_state_table"
+    DBName = db_name
+    DBTable = None  # self._DBResource.Table(db_name)
+    listResponse = DBClient.list_tables()
+    tableList = listResponse['TableNames']
+    print(tableList)
+    if db_name in tableList:
+        DBTable = DBResource.Table(db_name)
+        print("Table already existing 2->", DBTable)
+    else:
+        DBTable = "sprinkler_zone_state_table"
+        print("Table does not exist. Please create.->", DBTable)
+        # DBTable = None
+        aggrAttrDef = [
+            {"AttributeName": "zoneId", "AttributeType": "S"},
+            #{"AttributeName": "State", "AttributeType": "S"}
+        ]
+        aggrKeySchema = [
+            {"AttributeName": "zoneId", "KeyType": "HASH"}
+            #{"AttributeName": "timestamp", "KeyType": "RANGE"}
+        ]
+        aggrProvisionedThroughput = {
+            "ReadCapacityUnits": 5,
+            "WriteCapacityUnits": 5
+        }
+        DBTable = DBResource.create_table(TableName=db_name,
+                                          AttributeDefinitions=aggrAttrDef,
+                                          KeySchema=aggrKeySchema,
+                                          ProvisionedThroughput=aggrProvisionedThroughput)
+        DBTable.wait_until_exists()
+        print("After Table Creation")
+        # return DBTable, DBClient, DBResource, DBName
+
+        return DBName
+
+def insertOrUpdateIntoSprinklerStateDynamoTable(db_name, tabKey, updValue):
+    try:
+        # print("calling put_item")
+        # print("newRecord->", newRecord)
+        logger = logging.getLogger('boto3.dynamodb.table')
+        logger.setLevel(logging.DEBUG)
+        table = DBResource.Table(db_name)
+        if (table.item_count == 0):
+            newRecord = {
+                "zoneId": {"S": tabKey},
+                "State": {"S": updValue}
+            }
+            save_status = DBClient.put_item(TableName=db_name, Item=newRecord)
+            time.sleep(1)
+            return save_status
+        else:
+            upd_status = table.update_item(
+                Key={'zoneId': tabKey},
+                UpdateExpression="set State = :stateInfo",
+                ExpressionAttributeValues={':stateInfo': updValue},
+                ReturnValues="UPDATED_NEW"
+            )
+            time.sleep(1)
+            return upd_status
+
+    except ClientError as e:
+        # This error never happens.
+        print("ERROR")
+        print(e.response["Error"]['Message'])
+
+def get_data_with_key(table_name, key_name):
+    table = DBResource.Table(table_name)
+    try:
+        response = table.get_item(Key={'zoneId': key_name})
+    except ClientError as e:
+        print("ERROR")
+        print(e.response["Error"]['Message'])
+    else:
+        return response['Item']
 
 def get_data(table_name):
     table = DBResource.Table(table_name)
-    #table = get_table(table_name)
+    # table = get_table(table_name)
     response = table.scan()
     data = response["Items"]
     while 'LastEvaluatedKey' in response:
@@ -80,11 +252,11 @@ def get_aggeregate_data(aggregate_data):
 
     # Sample of aggregated values
     # ===============================
-    #{
+    # {
     #    "Zone":{
     #       "deviceType":{
     #            "datatype":{
-        #          "2021-09-26T01:37:00Z":{
+    #          "2021-09-26T01:37:00Z":{
     #                 "values":[
     #                       82.0,
     #                       95.0
@@ -93,10 +265,11 @@ def get_aggeregate_data(aggregate_data):
     #            },
     #       },
     #    },
-    #}
+    # }
 
     for entry in aggregate_data:
-        time_truncated_to_minutes = datetime.strptime(entry['timestamp'], '%Y-%m-%dT%H:%M:%SZ').strftime('%Y-%m-%dT%H:%M:00Z')
+        time_truncated_to_minutes = datetime.strptime(entry['timestamp'], '%Y-%m-%dT%H:%M:%SZ').strftime(
+            '%Y-%m-%dT%H:%M:00Z')
         # if the value list does not exists for zone id create empty list
         if entry['zoneId'] not in values.keys():
             values[entry["zoneId"]] = {}
@@ -114,20 +287,21 @@ def get_aggeregate_data(aggregate_data):
             values[entry["zoneId"]][entry['deviceType']][entry['datatype']][time_truncated_to_minutes] = {}
             values[entry["zoneId"]][entry['deviceType']][entry['datatype']][time_truncated_to_minutes]["values"] = []
 
-        values[entry["zoneId"]][entry['deviceType']][entry['datatype']][time_truncated_to_minutes]["values"].append(float(entry["value"]))
+        values[entry["zoneId"]][entry['deviceType']][entry['datatype']][time_truncated_to_minutes]["values"].append(
+            float(entry["value"]))
 
-    print ("values->", values)
+    print("values->", values)
 
     print("Aggregating data..")
-    #print("input values->", values)
+    # print("input values->", values)
     aggregate_data = []
     # Calculate aggregate data
     # For each Zone Id Aggregate the data per DeviceType, DataType and TimeStamp
-    #print("values.keys()->", values.keys())
+    # print("values.keys()->", values.keys())
     for device in values.keys():
         for devType in values[device].keys():
             # For each minute
-        # For each datatype
+            # For each datatype
             for datatype in values[device][devType].keys():
                 # For each minute
                 for timestamp in values[device][devType][datatype].keys():
@@ -138,8 +312,8 @@ def get_aggeregate_data(aggregate_data):
                     aggregate_data_entry['deviceType'] = devType
                     aggregate_data_entry['dataType'] = datatype
                     aggregate_data_entry['timestamp'] = timestamp
-                    #aggregate_data_entry['minimum'] = Decimal(str(min(values_list)))
-                    #aggregate_data_entry['maximum'] = Decimal(str(max(values_list)))
+                    # aggregate_data_entry['minimum'] = Decimal(str(min(values_list)))
+                    # aggregate_data_entry['maximum'] = Decimal(str(max(values_list)))
                     aggregate_data_entry['average'] = Decimal(str(round(sum(values_list) / len(values_list), 2)))
 
                     aggregate_data.append(aggregate_data_entry)
@@ -147,31 +321,62 @@ def get_aggeregate_data(aggregate_data):
 
     return aggregate_data
 
+def publishMQTTMessage(msgTopic, msgPayload):
+    # client = boto3.client('iot-data', region_name='us-east-1')
+    # IOT_DATA_ENDPOINT = get_aws_iot_ats_endpoint()
+    # boto3.client()
+    # a3pquorj9tve43-ats.iot.us-east-1.amazonaws.com
+    client_iot = boto3.client('iot-data', region_name='us-east-1',
+                              endpoint_url='https://a3pquorj9tve43-ats.iot.us-east-1.amazonaws.com')
+    # client_iot = boto3.client(
+    #     "iot-data",
+    #     #aws_access_key_id=AWS_ACCESS_KEY_ID,
+    #     #aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+    #     #region_name=REGION_NAME,
+    #     verify=True,
+    #     endpoint_url=IOT_DATA_ENDPOINT
+    # )
 
-def lambda_handler (event, context):
+    # Change topic, qos and payload
+    print("Before Publishing")
+    #response = client_iot.publish(topic="actuator/command/set-state/" + str(record['zoneId']), qos=1,
+    #                              payload=json.dumps({"State": "ON"}))
+    response = client_iot.publish(topic=msgTopic, qos=1, payload=msgPayload)
+    time.sleep(10)
+    print("response from publishing->", response)
+    print("After Publishing")
+
+def lambda_handler(event, context):
     print("Start Lambda")
-    #sns_client = boto3.client('sns')
+    # sns_client = boto3.client('sns')
     db_name = "agro_agg_data_table"
     DBName = checkAndCreateAggrTable(db_name)
 
+    db_name1 = "sprinkler_status_on_events_table"
+    DBName = checkAndCreateSprinklerTable(db_name1)
+
+    db_name2 = "sprinkler_zone_state_table"
+    DBName = checkAndCreateSprinklerStateTable(db_name2)
+
     table_name = "device_meta_data_table"
     data1 = get_data(table_name)
-    print ("data1", data1)
-    #data1_df = pd.read_json(data1)
+    print("data1", data1)
+    # data1_df = pd.read_json(data1)
 
-    print ("Before the Loop!!!")
-    #print ("event->", event)
-    print ("event['Records']", event['Records'])
+    print("Before the Loop!!!")
+    # print ("event->", event)
+    print("event['Records']", event['Records'])
+
     data = []
     for record in event['Records']:
-        #print ("record->", record)
+        # print ("record->", record)
         payload = base64.b64decode(record["kinesis"]["data"])
-        #print ("Decoded Payload->" + str(payload))
+        # print ("Decoded Payload->" + str(payload))
         payload_str1 = str(payload)
         payload_str = json.loads(payload)
         print("Decoded Payload_str->", payload_str)
 
-        #payad_str_df = pd.read_json(payload_str)
+        # payad_str_df = pd.read_json(payload_str)
 
         deviceId = payload_str["deviceId"]
         deviceType = payload_str["deviceType"]
@@ -184,32 +389,31 @@ def lambda_handler (event, context):
         # print("DataType:", datatype)
         # print("Value:", value)
         # print("Timestamp:", timestamp)
-        #print("DeviceZone:", devicezone)
+        # print("DeviceZone:", devicezone)
 
         data.append(json.loads(payload))
 
-    print ("Input Data is ->", data)
+    print("Input Data is ->", data)
     data_with_zone = data
 
     # Append ZoneId, latitude,longitude to the Input Stream Data
     for datarec in data_with_zone:
         for datarec1 in data1:
             if (datarec['deviceId'] == datarec1['deviceId']):
-                #print ("Zone Id is ->", datarec1['zoneId'])
-                #print("Latitude is ->", datarec1['latitude'])
-                #print("Longitude is ->", datarec1['longitude'])
+                # print ("Zone Id is ->", datarec1['zoneId'])
+                # print("Latitude is ->", datarec1['latitude'])
+                # print("Longitude is ->", datarec1['longitude'])
                 datarec.update(datarec1)
     ## Print the Appended Input STream Data with the ZoneId, latitude, longitude information.
-    print ("table_data_with_zone->", data_with_zone)
+    print("table_data_with_zone->", data_with_zone)
 
     # Aggregate the Data based on ZoneId, DeviceType, Datatype and Timestamp
     aggr_data = get_aggeregate_data(data_with_zone)
     print("Output Data is ->", aggr_data)
 
-    THRESHOLD_HUMIDITY = 10.0
+    THRESHOLD_HUMIDITY = 90.0
+    THRESHOLD_TEMP = 15.0
     for record in aggr_data:
-        if (float(record['average']) < THRESHOLD_HUMIDITY):
-            print ("Soil Humidity is very Lower - ", record['average'], "% than the Thrshold - ", str(THRESHOLD_HUMIDITY), "%. Switch on the Sprinkler in Zone - ", record['zoneId'])
         newRecord = {
             "zoneId": {"S": str(record['zoneId'])},
             "deviceType": {"S": record['deviceType']},
@@ -220,4 +424,73 @@ def lambda_handler (event, context):
         save_stat = insertIntoAggrDynamoTable(db_name, newRecord)
         print(save_stat)
 
-    print ("End Lambda")
+        db_name1 = "sprinkler_status_on_events_table"
+        #currdateandtime = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
+        currdateandtime = datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
+        if (float(record['average']) < THRESHOLD_HUMIDITY):
+            print("Soil Humidity is very Lower - ", record['average'], "% than the Threshold - ",
+                  str(THRESHOLD_HUMIDITY), "%. Switch ON the Sprinkler in Zone - ", record['zoneId'])
+            info_wthr = get_weather_info(lat, lon)
+            print("info_wthr->", info_wthr['celsius'])
+            print("zoneId->", str(record['zoneId']))
+            if (float(info_wthr['celsius']) > THRESHOLD_TEMP):
+                newRecord = {
+                    "zoneId": {"S": str(record['zoneId'])},
+                    "currdateandtime": {"S": currdateandtime},
+                    "deviceType": {"S": record['deviceType']},
+                    "dataType": {"S": record['dataType']},
+                    "timestamp": {"S": timestamp},
+                    "avgValue": {"S": str(record['average'])},
+                    "thresholdHumidity": {"S": str(THRESHOLD_HUMIDITY)},
+                    "thresholdTemp": {"S": str(THRESHOLD_TEMP)},
+                    "sprinklerStatus": {"S": "ON"}
+                }
+                save_stat = insertIntoSprinklerDynamoTable(db_name1, newRecord)
+                print("Inside the ON Actuator Table Success Loop", save_stat)
+
+                # Update the STate of the Sprinkler by maintaining against the Zone. 1 Row per Zone
+                return_stat = insertOrUpdateIntoSprinklerStateDynamoTable(db_name2, str(record['zoneId']), "ON")
+                print ("return_stat from Sprinkler State ->", return_stat)
+
+                return_item = get_data_with_key(db_name2, str(record['zoneId']))
+                print ("return_item from Sprinkler State->", return_item)
+
+                if (return_item['State'] != "ON"):
+                    mesgTopic = "actuator/command/set-state/" + str(record['zoneId'])
+                    mesgPayload = json.dumps({"State": "ON"})
+                    publishMQTTMessage(mesgTopic, mesgPayload)
+
+        if (float(record['average']) > THRESHOLD_HUMIDITY):
+            print("Soil Humidity is Higher - ", record['average'], "% than the Threshold - ",
+                  str(THRESHOLD_HUMIDITY), "%. Switch OFF the Sprinkler in Zone - ", record['zoneId'])
+            info_wthr = get_weather_info(lat, lon)
+            print("info_wthr->", info_wthr['celsius'])
+            print("zoneId->", str(record['zoneId']))
+            if (float(info_wthr['celsius']) < THRESHOLD_TEMP):
+                newRecord = {
+                    "zoneId": {"S": str(record['zoneId'])},
+                    "currdateandtime": {"S": currdateandtime},
+                    "deviceType": {"S": record['deviceType']},
+                    "dataType": {"S": record['dataType']},
+                    "timestamp": {"S": timestamp},
+                    "avgValue": {"S": str(record['average'])},
+                    "thresholdHumidity": {"S": str(THRESHOLD_HUMIDITY)},
+                    "thresholdTemp": {"S": str(THRESHOLD_TEMP)},
+                    "sprinklerStatus": {"S": "OFF"}
+                }
+                save_stat = insertIntoSprinklerDynamoTable(db_name1, newRecord)
+                print("Inside the OFF Actuator Table Success Loop", save_stat)
+
+                # Update the STate of the Sprinkler by maintaining against the Zone. 1 Row per Zone
+                return_stat = insertOrUpdateIntoSprinklerStateDynamoTable(db_name2, str(record['zoneId']), "ON")
+                print("return_stat from Sprinkler State ->", return_stat)
+
+                return_item = get_data_with_key(db_name2, str(record['zoneId']))
+                print("return_item from Sprinkler State->", return_item)
+
+                if (return_item['State'] != "OFF"):
+                    mesgTopic = "actuator/command/set-state/" + str(record['zoneId'])
+                    mesgPayload = json.dumps({"State": "OFF"})
+                    publishMQTTMessage(mesgTopic, mesgPayload)
+
+    print("End Lambda")
