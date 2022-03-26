@@ -1,0 +1,28 @@
+{% extends "layout.html" %} {% block content %}
+<canvas id="lineChart" width="200px" height="200px"></canvas>
+<script>
+    var context = document.getElementById("lineChart").getContext("2d");
+    var lineChart = new Chart(context, 
+        {
+        type: 'line',
+        data : {
+            labels: {{ labels | safe}},
+            datasets: [
+
+                {% for key, data in values.items() %}
+                {
+                    label: {{ "'" | safe  ~ key | string ~ "'" | safe}},
+                    data: {{ data | safe }},
+                    fill: false,
+                    borderColor: {{ "'" | safe  ~ colors[loop.index] ~ "'" | safe}},
+                    lineTension: 0.1
+                },
+                {% endfor %}
+            ]
+        },
+        options: {
+            response: false
+        }
+        });
+</script>
+{% endblock content %}

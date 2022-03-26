@@ -1,0 +1,14 @@
+[{
+        "deviceId": "SM-001",
+        "deviceType": "SoilSensor",
+        "latittude": "",
+        "longitude": "",
+        "timestamp": "2022-03-26T03:05:46Z"
+    },
+    {
+        "deviceId": "SL-001",
+        "deviceType": "Sprinkler",
+        "value": "52",
+        "timestamp": "2022-03-26T03:05:46Z"
+    }
+]

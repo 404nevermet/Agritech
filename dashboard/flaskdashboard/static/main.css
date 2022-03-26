@@ -1,0 +1,8 @@
+.page-content {
+    min-height: 500px;
+}
+
+#lineChart {
+    width: 600px !important;
+    height: 600px !important;
+}
