@@ -1,0 +1,87 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "AWS Cloud Formation for Agritech Farm Water Management-Team 02",
+    "Parameters": {
+		"ThingType1":{
+			"Type":"String",
+			"Default":"SoilMoistureSensor"
+		},
+		"ThingType2":{
+			"Type":"String",
+			"Default":"SoilSprinkler"
+		},
+        "TelemetryDataTableName": {
+            "Type": "String",
+            "Default": "telemetry_data_table"
+        },
+		"DeviceMetaDataTableName": {
+            "Type": "String",
+            "Default": "device_meta_data_table"
+        },
+		"AggregateDataTableName": {
+            "Type": "String",
+            "Default": "aggregate_data_table"
+        },
+        "TelemetryStreamName": {
+            "Type": "String",
+            "Default": "telemetry_data_stream"
+        },
+		"DeviceMetaDataStreamName": {
+            "Type": "String",
+            "Default": "device_metadata_data_stream"
+        },
+        "TelemetryDataProcessAndStorageRoleName": {
+            "Type": "String",
+            "Default": "TelemetryDataProcessAndStorageRole3"
+        },
+		"DeviceMetaDataStorageRoleName": {
+            "Type": "String",
+            "Default": "DeviceMetaDataStorageRole3"
+        },
+		"TelemetryDataProcessorServiceRoleName": {
+            "Type": "String",
+            "Default": "TelemetryDataProcessorServiceRole3"
+        },
+		"SensorRegisterDataRuleName": {
+            "Type": "String",
+            "Default": "SensorRegisterDataRule"
+        },
+		"SensorRegisterResponseDataRuleName": {
+            "Type": "String",
+            "Default": "SensorRegisterResponseDataRule"
+        },
+		"SensorTelemetryDataRuleName": {
+            "Type": "String",
+            "Default": "SensorTelemetryDataRule"
+        },
+		"SprinklerRegisterDataRuleName": {
+            "Type": "String",
+            "Default": "SprinklerRegisterDataRuleName"
+        },
+		"SprinklerRegisterResponseDataRuleName": {
+            "Type": "String",
+            "Default": "SprinklerRegisterResponseDataRule"
+        },
+		"SprinklerSetStateDataRuleName": {
+            "Type": "String",
+            "Default": "SprinklerSetStateDataRule"
+        },
+		"SprinklerSetStateResponseDataRuleName": {
+            "Type": "String",
+            "Default": "SprinklerSetStateResponseDataRule"
+        }
+    },
+    "Resources": {
+      "TelemetryDataStreamdummy": {
+            "Type": "AWS::Kinesis::Stream",
+            "Properties": {
+                "Name": "TelemetryStreamNamedummy",
+                "ShardCount": 1,
+                "Tags": [{
+                    "Key": "Name",
+                    "Value": "TelemetryDataStreamdummy"
+                }]
+            }
+        }
+    }
+}
