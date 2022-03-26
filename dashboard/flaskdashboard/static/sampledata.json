@@ -1,0 +1,145 @@
+[{
+        "deviceId": "SM-001",
+        "deviceType": "SoilSensor",
+        "value": "52",
+        "timestamp": "2022-03-26T03:05:46Z"
+    },
+    {
+        "deviceId": "SM-001",
+        "deviceType": "SoilSensor",
+        "value": "54",
+        "timestamp": "2022-03-26T03:05:51Z"
+    },
+    {
+        "deviceId": "SM-001",
+        "deviceType": "SoilSensor",
+        "value": "53",
+        "timestamp": "2022-03-26T03:05:56Z"
+    },
+    {
+        "deviceId": "SM-001",
+        "deviceType": "SoilSensor",
+        "value": "53",
+        "timestamp": "2022-03-26T03:06:01Z"
+    },
+    {
+        "deviceId": "SM-001",
+        "deviceType": "SoilSensor",
+        "value": "56",
+        "timestamp": "2022-03-26T03:06:06Z"
+    },
+    {
+        "deviceId": "SM-001",
+        "deviceType": "SoilSensor",
+        "value": "53",
+        "timestamp": "2022-03-26T03:06:11Z"
+    },
+    {
+        "deviceId": "SM-001",
+        "deviceType": "SoilSensor",
+        "value": "56",
+        "timestamp": "2022-03-26T03:06:16Z"
+    },
+    {
+        "deviceId": "SM-001",
+        "deviceType": "SoilSensor",
+        "value": "62",
+        "timestamp": "2022-03-26T03:06:21Z"
+    },
+    {
+        "deviceId": "SM-002",
+        "deviceType": "SoilSensor",
+        "value": "55",
+        "timestamp": "2022-03-26T03:05:46Z"
+    },
+    {
+        "deviceId": "SM-002",
+        "deviceType": "SoilSensor",
+        "value": "50",
+        "timestamp": "2022-03-26T03:05:51Z"
+    },
+    {
+        "deviceId": "SM-002",
+        "deviceType": "SoilSensor",
+        "value": "51",
+        "timestamp": "2022-03-26T03:05:56Z"
+    },
+    {
+        "deviceId": "SM-002",
+        "deviceType": "SoilSensor",
+        "value": "53",
+        "timestamp": "2022-03-26T03:06:01Z"
+    },
+    {
+        "deviceId": "SM-002",
+        "deviceType": "SoilSensor",
+        "value": "56",
+        "timestamp": "2022-03-26T03:06:06Z"
+    },
+    {
+        "deviceId": "SM-002",
+        "deviceType": "SoilSensor",
+        "value": "53",
+        "timestamp": "2022-03-26T03:06:11Z"
+    },
+    {
+        "deviceId": "SM-002",
+        "deviceType": "SoilSensor",
+        "value": "56",
+        "timestamp": "2022-03-26T03:06:16Z"
+    },
+    {
+        "deviceId": "SM-002",
+        "deviceType": "SoilSensor",
+        "value": "66",
+        "timestamp": "2022-03-26T03:06:21Z"
+    },
+    {
+        "deviceId": "SM-003",
+        "deviceType": "SoilSensor",
+        "value": "51",
+        "timestamp": "2022-03-26T03:05:46Z"
+    },
+    {
+        "deviceId": "SM-003",
+        "deviceType": "SoilSensor",
+        "value": "53",
+        "timestamp": "2022-03-26T03:05:51Z"
+    },
+    {
+        "deviceId": "SM-003",
+        "deviceType": "SoilSensor",
+        "value": "53",
+        "timestamp": "2022-03-26T03:05:56Z"
+    },
+    {
+        "deviceId": "SM-003",
+        "deviceType": "SoilSensor",
+        "value": "55",
+        "timestamp": "2022-03-26T03:06:01Z"
+    },
+    {
+        "deviceId": "SM-003",
+        "deviceType": "SoilSensor",
+        "value": "56",
+        "timestamp": "2022-03-26T03:06:06Z"
+    },
+    {
+        "deviceId": "SM-003",
+        "deviceType": "SoilSensor",
+        "value": "55",
+        "timestamp": "2022-03-26T03:06:11Z"
+    },
+    {
+        "deviceId": "SM-003",
+        "deviceType": "SoilSensor",
+        "value": "56",
+        "timestamp": "2022-03-26T03:06:16Z"
+    },
+    {
+        "deviceId": "SM-003",
+        "deviceType": "SoilSensor",
+        "value": "64",
+        "timestamp": "2022-03-26T03:06:21Z"
+    }
+]

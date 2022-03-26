@@ -1,0 +1,21 @@
+{% extends "layout.html" %} {% block content %}
+<table>
+    <thead>
+        <th>Device</th>
+        <th>Status</th>
+    </thead>
+    <tbody>
+        {% for sprinker in sprinklers}
+        <td>
+            {{ deviceId }}
+        </td>
+        <td>
+            {{ status}}
+        </td>
+        {% endfor}
+    </tbody>
+</table>
+
+
+
+{% endblock content %}
