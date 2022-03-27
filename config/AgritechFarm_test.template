@@ -1,0 +1,561 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "AWS Cloud Formation for Agritech Farm Water Management-Team 02",
+    "Parameters": {
+		"ThingType1":{
+			"Type":"String",
+			"Default":"SoilMoistureSensor"
+		},
+		"ThingType2":{
+			"Type":"String",
+			"Default":"SoilSprinkler"
+		},
+        "TelemetryDataTableName": {
+            "Type": "String",
+            "Default": "telemetry_data_table"
+        },
+		"DeviceMetaDataTableName": {
+            "Type": "String",
+            "Default": "device_meta_data_table"
+        },
+		"AggregateDataTableName": {
+            "Type": "String",
+            "Default": "aggregate_data_table"
+        },
+        "TelemetryStreamName": {
+            "Type": "String",
+            "Default": "telemetry_data_stream"
+        },
+		"DeviceMetaDataStreamName": {
+            "Type": "String",
+            "Default": "device_metadata_data_stream"
+        },
+        "TelemetryDataProcessAndStorageRoleName": {
+            "Type": "String",
+            "Default": "TelemetryDataProcessAndStorageRole3"
+        },
+		"DeviceMetaDataStorageRoleName": {
+            "Type": "String",
+            "Default": "DeviceMetaDataStorageRole3"
+        },
+		"TelemetryDataProcessorServiceRoleName": {
+            "Type": "String",
+            "Default": "TelemetryDataProcessorServiceRole3"
+        },
+		"SensorRegisterDataRuleName": {
+            "Type": "String",
+            "Default": "SensorRegisterDataRule"
+        },
+		"SensorRegisterResponseDataRuleName": {
+            "Type": "String",
+            "Default": "SensorRegisterResponseDataRule"
+        },
+		"SensorTelemetryDataRuleName": {
+            "Type": "String",
+            "Default": "SensorTelemetryDataRule"
+        },
+		"SprinklerRegisterDataRuleName": {
+            "Type": "String",
+            "Default": "SprinklerRegisterDataRuleName"
+        },
+		"SprinklerRegisterResponseDataRuleName": {
+            "Type": "String",
+            "Default": "SprinklerRegisterResponseDataRule"
+        },
+		"SprinklerSetStateDataRuleName": {
+            "Type": "String",
+            "Default": "SprinklerSetStateDataRule"
+        },
+		"SprinklerSetStateResponseDataRuleName": {
+            "Type": "String",
+            "Default": "SprinklerSetStateResponseDataRule"
+        }
+    },
+    "Resources": {
+		"SMThing1":{
+			"Type":"AWS::IoT::Thing",
+			"Properties":{
+				"ThingName":"SMS-000"
+			}
+		},
+		"SMThing2":{
+			"Type":"AWS::IoT::Thing",
+			"Properties":{
+				"ThingName":"SMS-001"
+			}
+		},
+		"SMThing3":{
+			"Type":"AWS::IoT::Thing",
+			"Properties":{
+				"ThingName":"SMS-002"
+			}
+		},
+		"SMThing4":{
+			"Type":"AWS::IoT::Thing",
+			"Properties":{
+				"ThingName":"SMS-003"
+			}
+		},
+		"SMThing5":{
+			"Type":"AWS::IoT::Thing",
+			"Properties":{
+				"ThingName":"SMS-004"
+			}
+		},
+		"SMThing6":{
+			"Type":"AWS::IoT::Thing",
+			"Properties":{
+				"ThingName":"SMS-005"
+			}
+		},
+		"SMThing7":{
+			"Type":"AWS::IoT::Thing",
+			"Properties":{
+				"ThingName":"SMS-006"
+			}
+		},
+		"SMThing8":{
+			"Type":"AWS::IoT::Thing",
+			"Properties":{
+				"ThingName":"SMS-007"
+			}
+		},
+		"SMThing9":{
+			"Type":"AWS::IoT::Thing",
+			"Properties":{
+				"ThingName":"SMS-008"
+			}
+		},
+		"SMThing10":{
+			"Type":"AWS::IoT::Thing",
+			"Properties":{
+				"ThingName":"SMS-009"
+			}
+		},
+        "SPThing1":{
+			"Type":"AWS::IoT::Thing",
+			"Properties":{
+				"ThingName":"SLR-000"
+			}
+		},
+        "SPThing2":{
+			"Type":"AWS::IoT::Thing",
+			"Properties":{
+				"ThingName":"SLR-001"
+			}
+		},
+        "TelemetryDataProcessAndStorageRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "RoleName": { "Ref": "TelemetryDataProcessAndStorageRoleName" },
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [{
+                        "Effect": "Allow",
+                        "Principal": {
+                            "Service": [
+                                "iot.amazonaws.com"
+                            ]
+                        },
+                        "Action": [
+                            "sts:AssumeRole"
+                        ]
+                    }]
+                },
+                "Path": "/service-role/",
+                "Policies": [{
+                    "PolicyName": "TelemetryDateProcessAndStoragePolicy3",
+                    "PolicyDocument": {
+                        "Version": "2012-10-17",
+                        "Statement": [{
+                            "Effect": "Allow",
+                            "Action": [
+								"iot:Publish",
+								"iot:*",
+                                "kinesis:PutRecord",
+                                "logs:*",
+								"cloudwatch:PutMetricData"
+                            ],
+                            "Resource": "*"
+                        }]
+                    }
+                }],
+                "Tags": [{
+                    "Key": "Name",
+                    "Value": "TelemetryDataProcessAndStorageRoleName"
+                }]
+            }
+        },
+		"DeviceMetaDataStorageRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "RoleName": { "Ref": "DeviceMetaDataStorageRoleName" },
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [{
+                        "Effect": "Allow",
+                        "Principal": {
+                            "Service": [
+                                "iot.amazonaws.com"
+                            ]
+                        },
+                        "Action": [
+                            "sts:AssumeRole"
+                        ]
+                    }]
+                },
+                "Path": "/service-role/",
+                "Policies": [{
+                    "PolicyName": "DeviceMetaDataAccessPolicy3",
+                    "PolicyDocument": {
+                        "Version": "2012-10-17",
+                        "Statement": [{
+                            "Effect": "Allow",
+                            "Action": [
+								"iot:Publish",
+								"iot:*",
+								"dynamodb:*",
+                                "logs:*",
+								"cloudwatch:PutMetricData"
+                            ],
+                            "Resource": "*"
+                        }]
+                    }
+                }],
+                "Tags": [{
+                    "Key": "Name",
+                    "Value": "DeviceMetaDataStorageRoleName"
+                }]
+            }
+        },
+		"TelemetryDataProcessorServiceRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "RoleName": { "Ref": "TelemetryDataProcessorServiceRoleName" },
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [{
+                        "Effect": "Allow",
+                        "Principal": {
+                            "Service": [
+                                "lambda.amazonaws.com"
+                            ]
+                        },
+                        "Action": [
+                            "sts:AssumeRole"
+                        ]
+                    }]
+                },
+                "Path": "/service-role/",
+                "Policies": [{
+                    "PolicyName": "TelemetryDataProcessPolicy3",
+                    "PolicyDocument": {
+                        "Version": "2012-10-17",
+                        "Statement": [{
+                            "Effect": "Allow",
+                            "Action": [
+                                "logs:CreateLogStream",
+                                "logs:PutLogEvents",
+                                "kinesis:*",
+                                "dynamodb:*",
+                                "cloudwatch:*",
+                                "iam:GetRole",
+                                "iam:ListRoles",
+                                "iam:PassRole",
+                                "iam:CreateServiceLinkedRole",
+                                "kms:DescribeKey",
+                                "kms:ListAliases",
+                                "lambda:CreateFunction",
+                                "lambda:ListFunctions",
+                                "lambda:ListEventSourceMappings",
+                                "lambda:CreateEventSourceMapping",
+                                "lambda:DeleteEventSourceMapping",
+                                "lambda:GetFunctionConfiguration",
+                                "lambda:DeleteFunction",
+                                "tag:GetResources",
+                                "logs:CreateLogGroup",
+                                "logs:CreateLogStream",
+                                "logs:PutLogEvents",
+                                "dax:*",
+                                "resource-groups:ListGroups",
+                                "resource-groups:ListGroupResources",
+                                "resource-groups:GetGroup",
+                                "resource-groups:GetGroupQuery",
+                                "resource-groups:DeleteGroup",
+                                "resource-groups:CreateGroup"
+                            ],
+                            "Resource": "*"
+                        }]
+                    }
+                }],
+                "Tags": [{
+                    "Key": "Name",
+                    "Value": "TelemetryDataProcessorServiceRole"
+                }]
+            }
+        },
+        "TelemetryDataDB": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {
+                "TableName": {
+                    "Ref": "TelemetryDataTableName"
+                },
+                "AttributeDefinitions": [{
+                        "AttributeName": "deviceId",
+                        "AttributeType": "S"
+                    },
+					{
+                        "AttributeName": "timestamp",
+                        "AttributeType": "S"
+                    }
+                ],
+                "KeySchema": [{
+                        "AttributeName": "deviceId",
+                        "KeyType": "HASH"
+                    },
+                    {
+                        "AttributeName": "timestamp",
+                        "KeyType": "RANGE"
+                    }
+                ],
+                "ProvisionedThroughput": {
+                    "ReadCapacityUnits": 5,
+                    "WriteCapacityUnits": 5
+                },
+                "Tags": [{
+                    "Key": "name",
+                    "Value": "TelemetryDataDB"
+                }]
+            }
+        },
+		"DeviceMetaDataDB": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {
+                "TableName": {
+                    "Ref": "DeviceMetaDataTableName"
+                },
+                "AttributeDefinitions": [{
+                        "AttributeName": "deviceId",
+                        "AttributeType": "S"
+                    },
+					{
+                        "AttributeName": "timestamp",
+                        "AttributeType": "S"
+                    }
+                ],
+                "KeySchema": [{
+                        "AttributeName": "deviceId",
+                        "KeyType": "HASH"
+                    },
+                    {
+                        "AttributeName": "timestamp",
+                        "KeyType": "RANGE"
+                    }
+                ],
+                "ProvisionedThroughput": {
+                    "ReadCapacityUnits": 5,
+                    "WriteCapacityUnits": 5
+                },
+                "Tags": [{
+                    "Key": "name",
+                    "Value": "DeviceMetaDataDB"
+                }]
+            }
+        },
+        "TelemetryDataStream": {
+            "Type": "AWS::Kinesis::Stream",
+            "Properties": {
+                "Name": {
+                    "Ref": "TelemetryStreamName"
+                },
+                "ShardCount": 1,
+                "Tags": [{
+                    "Key": "Name",
+                    "Value": "TelemetryDataStream"
+                }]
+            }
+        },
+		"DeviceMetaDataStream": {
+            "Type": "AWS::Kinesis::Stream",
+            "Properties": {
+                "Name": {
+                    "Ref": "DeviceMetaDataStreamName"
+                },
+                "ShardCount": 1,
+                "Tags": [{
+                    "Key": "Name",
+                    "Value": "TelemetryDataStream"
+                }]
+            }
+        },
+		"SensorRegisterDataRule": {
+			"Type": "AWS::IoT::TopicRule",
+			"Properties": {
+				"RuleName": {
+					"Ref": "SensorRegisterDataRuleName"
+				},
+				"TopicRulePayload": {
+					"Sql": "SELECT * FROM 'sensor/request/register'",
+					"ruleDisabled": false, 
+					"awsIotSqlVersion": "2016-03-23",
+					"actions": [
+					{
+						"dynamoDB": {
+							"TableName": {
+								"Ref": "DeviceMetaDataTableName"
+								},
+							"roleArn": { "Fn::GetAtt": ["DeviceMetaDataStorageRole", "Arn"] },
+							"hashKeyField": "topic",
+							"hashKeyValue": "${topic(2)}",
+							"rangeKeyField": "timestamp",
+							"rangeKeyValue": "${timestamp()}"
+						}
+					}
+				] 
+				}
+			}
+		},
+		"SensorTelemetryDataRule": {
+			"Type": "AWS::IoT::TopicRule",
+			"Properties": {
+				"RuleName": {
+					"Ref": "SensorTelemetryDataRuleName"
+				},
+				"TopicRulePayload": {
+					"Sql": "SELECT * FROM 'sensor/data/telemetry'",
+					"ruleDisabled": false, 
+					"awsIotSqlVersion": "2016-03-23",
+					"actions": [
+					{
+						"kinesis": {
+						"streamName": "TelemetryDataStream", 
+						"partitionKey": "${topic()}",
+						"roleArn": { "Fn::GetAtt": ["TelemetryDataProcessAndStorageRole", "Arn"] }
+						},
+						"dynamoDB": {
+							"TableName": {
+								"Ref": "TelemetryDataTableName"
+								},
+							"roleArn": { "Fn::GetAtt": ["TelemetryDataProcessAndStorageRole", "Arn"] },
+							"hashKeyField": "topic",
+							"hashKeyValue": "${topic(2)}",
+							"rangeKeyField": "timestamp",
+							"rangeKeyValue": "${timestamp()}"
+						}
+					}
+				] 
+					
+				}
+			}
+		},
+		"SprinklerRegisterDataRule": {
+			"Type": "AWS::IoT::TopicRule",
+			"Properties": {
+				"RuleName": {
+					"Ref": "SprinklerRegisterDataRuleName"
+				},
+				"TopicRulePayload": {
+					"Sql": "SELECT * FROM 'actuator/request/register'",
+					"ruleDisabled": false, 
+					"awsIotSqlVersion": "2016-03-23",
+					"actions": [
+					{
+						"dynamoDB": {
+							"TableName": {
+								"Ref": "DeviceMetaDataTableName"
+								},
+							"roleArn": { "Fn::GetAtt": ["DeviceMetaDataStorageRole", "Arn"] },
+							"hashKeyField": "topic",
+							"hashKeyValue": "${topic(2)}",
+							"rangeKeyField": "timestamp",
+							"rangeKeyValue": "${timestamp()}"
+						}
+					}
+				]
+					
+				}
+			}
+		},
+		"SprinklerSetStateDataRule": {
+			"Type": "AWS::IoT::TopicRule",
+			"Properties": {
+				"RuleName": {
+					"Ref": "SprinklerSetStateDataRuleName"
+				},
+				"TopicRulePayload": {
+					"Sql": "SELECT * FROM 'actuator/command/set-state/zoneId'",
+					"ruleDisabled": false, 
+					"awsIotSqlVersion": "2016-03-23",
+					"actions": [
+					{
+						"dynamoDB": {
+							"TableName": {
+								"Ref": "DeviceMetaDataTableName"
+								},
+							"roleArn": { "Fn::GetAtt": ["DeviceMetaDataStorageRole", "Arn"] },
+							"hashKeyField": "topic",
+							"hashKeyValue": "${topic(2)}",
+							"rangeKeyField": "timestamp",
+							"rangeKeyValue": "${timestamp()}"
+						}
+					}
+				]
+					
+				}
+			}
+		},
+        "TelemetryDataProcessor": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "FunctionName": "TelemetryDataProcessor",
+                "Role": { "Fn::GetAtt": ["TelemetryDataProcessorServiceRole", "Arn"] },
+                "Runtime": "python3.8",
+                "Handler": "index.lambda_handler",
+                "Code": {
+                    "ZipFile": {
+                        "Fn::Join": [
+                            "\n", [
+                                "    return 1"
+                            ]
+                        ]
+                    }
+                },
+                "Tags": [{
+                    "Key": "name",
+                    "Value": "TelemetryDataProcessor"
+                }]
+            }
+        },
+        "EventSourceMapping": {
+            "Type": "AWS::Lambda::EventSourceMapping",
+            "Properties": {
+                "EventSourceArn": {
+                    "Fn::Join": [
+                        "", [
+                            "arn:aws:kinesis:",
+                            {
+                                "Ref": "AWS::Region"
+                            },
+                            ":",
+                            {
+                                "Ref": "AWS::AccountId"
+                            },
+                            ":stream/",
+                            {
+                                "Ref": "TelemetryStreamName"
+                            }
+                        ]
+                    ]
+                },
+                "FunctionName": {
+                    "Fn::GetAtt": [
+                        "TelemetryDataProcessor",
+                        "Arn"
+                    ]
+                },
+                "BatchSize": 5,
+                "StartingPosition": "TRIM_HORIZON"
+            }
+        }
+    }
+}
