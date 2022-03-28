@@ -17,13 +17,14 @@ class FarmManager:
     def create_soil_sensor_devices(self):
         for count in range(0, self._soil_censors_count):
             deviceId = "SMS-00{}".format(count)
-            soilMoistureSensor = SoilSensor(deviceId, 1, 1, 1)
+            zoneId = round(count/4) + 1
+            soilMoistureSensor = SoilSensor(deviceId, 1, 1, zoneId)
             self._devices.append(soilMoistureSensor)
 
     def create_sprinkler_devices(self):
         for count in range(0, self._sprinkler_count):
             deviceId = "SLR-00{}".format(count)
-            sprinkler = Sprinkler(deviceId, 1, 1, 1)
+            sprinkler = Sprinkler(deviceId, 1, 1, count)
             self._devices.append(sprinkler)
 
     def start_all(self):
@@ -65,7 +66,7 @@ class FarmManager:
 
 
 def main():
-    farmManager = FarmManager(10,2)
+    farmManager = FarmManager(8,2)
     farmManager.execute()
 
 
