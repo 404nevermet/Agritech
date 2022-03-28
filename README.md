@@ -118,5 +118,12 @@ Kepping the extensibility in mind each Request/Response/Command type is named at
                 status: <COMMAND_SUCCESS/COMMAND_FAILED>
             }
 
-###  Simulator Design
-[TBD]
+###  UI design
+
+* Dashboard main page
+![Architecture Diagram](./DesignDocuments/dashboard-homepage.png)
+* Sprinkler status page
+![Architecture Diagram](./DesignDocuments/sprinkler-statuspage.png)
+* Zone data
+![Architecture Diagram](./DesignDocuments/zonewise-data-page.png)
+
