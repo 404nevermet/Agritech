@@ -127,3 +127,6 @@ Kepping the extensibility in mind each Request/Response/Command type is named at
 * Zone data
 ![Architecture Diagram](./DesignDocuments/zonewise-data-page.png)
 
+#### Instructions to Run UI
+* Run below from dashboard directory
+        python run.py
