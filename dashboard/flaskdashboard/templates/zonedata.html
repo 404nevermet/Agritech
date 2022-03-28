@@ -1,0 +1,38 @@
+{% extends "layout.html" %} {% block content %}
+<div class="graph-wrapper">
+    <h1 class="zone-data-caption">
+        Zone wise data
+    </h1>
+    <div id="canvas-holder">
+        <canvas id="lineChart" class="linechart"></canvas>
+    </div>
+    <a href="/" type="button" class="btn btn-success back-button">Back</a>
+    <script>
+        var context = document.getElementById("lineChart").getContext("2d");
+        var lineChart = new Chart(context, 
+            {
+            type: 'line',
+            data : {
+                labels: {{ labels | safe}},
+                datasets: [
+
+                    {% for key, data in values.items() %}
+                    {
+                        label: {{ "'" | safe  ~ key | string ~ "'" | safe}},
+                        data: {{ data | safe }},
+                        fill: false,
+                        borderColor: {{ "'" | safe  ~ colors[loop.index] ~ "'" | safe}},
+                        lineTension: 0.1
+                    },
+                    {% endfor %}
+                ]
+            },
+            options: {
+                maintainAspectRatio: false,
+                responsive : false
+            }
+            });
+            
+    </script>
+</div>
+{% endblock content %}
