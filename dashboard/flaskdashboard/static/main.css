@@ -1,8 +1,138 @@
+body {
+    margin: 0;
+    padding: 0;
+}
+
+.page-wrapper {
+    padding: 0;
+    margin: 0;
+}
+
+.logo-wrapper {
+    display: flex;
+}
+
+.logo>a>svg {
+    flex: 1;
+    fill: rgb(156, 190, 48, 1);
+}
+
+.logo-text {
+    font-weight: bold;
+    color: rgb(84, 82, 79, 1);
+}
+
+header.spacer {
+    display: flex;
+}
+
+.spacer-left {
+    flex: 1 !important;
+}
+
+.spacer-right {
+    flex: 3 !important;
+}
+
 .page-content {
     min-height: 500px;
 }
 
+
+/* #canvas-holder {
+    background-color: #FFFFFF;
+    top: 8px;
+    left: 8px;
+    right: 8px;
+    bottom: 8px;
+} */
+
+.graph-wrapper {
+    display: flex;
+    flex-direction: column;
+}
+
+.graph-wrapper>.back-button {
+    width: 80px;
+    margin: auto;
+}
+
+.zone-data-caption {
+    font-size: 32px !important;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
 #lineChart {
-    width: 600px !important;
-    height: 600px !important;
+    height: 600px;
+    width: 1200px;
+    margin: auto;
+    margin-top: 100px;
+}
+
+body>.page-wrapper>footer {
+    min-height: 300px;
+    background-color: rgb(84, 82, 79, 1);
+}
+
+
+/*
+Primary : rgb(174, 213, 129), #AED581
+Primary Light : rgb(225, 255, 177) , #E1FFB1
+Primary Dark : rgb(125, 164, 83), #7DA453
+*/
+
+.status-table-wrapper>table>thead {
+    background-color: rgb(125, 164, 83, 1);
+}
+
+.status-table-wrapper {
+    width: 50%;
+    margin: auto;
+}
+
+.sprinkler-off {
+    background-color: rgb(225, 255, 177, 1) !important;
+}
+
+.sprinkler-on {
+    background-color: rgb(255, 177, 0, 1) !important;
+}
+
+.dashboard-wrapper {
+    display: flex;
+    align-self: center;
+}
+
+.dashboard-wrapper .dashboard-caption {
+    text-align: center;
+}
+
+.dashboard-spacer {
+    flex: 1;
+}
+
+.dashboard {
+    display: flex;
+    flex: 3;
+    flex-direction: column;
+}
+
+.tiles-wrapper {
+    flex: 1;
+    flex-direction: row;
+}
+
+.tiles-wrapper>.tile {
+    flex: 1;
+    padding: 20px;
+    /* border: 1px solid rgb(84, 82, 79, 1); */
+    font-size: 20px;
+    text-align: center;
+}
+
+.tiles-wrapper>.tile>a,
+.tiles-wrapper>.tile>a:active {
+    text-decoration: none;
+    color: rgb(125, 164, 83, 1);
 }

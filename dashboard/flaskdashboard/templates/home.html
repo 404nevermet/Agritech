@@ -1,3 +1,17 @@
 {% extends "layout.html" %} {% block content %}
-<h1>This is test</h1>
+<div class="dashboard-wrapper">
+    <div class="dashboard-spacer">&nbsp;</div>
+    <div class="dashboard">
+        <h1 class="dashboard-caption"> AgroTech Admin Dashboard </h1>
+        <div class="tiles-wrapper">
+            <div class="tile">
+                <a href="/status" class="sprinkler-status-link">Sprinkler Status</a>
+            </div>
+            <div class="tile">
+                <a href="/zonedata" class="sprinkler-status-link">Zone Wide Data</a>
+            </div>
+        </div>
+    </div>
+    <div class="dashboard-spacer">&nbsp;</div>
+</div>
 {% endblock content %}
