@@ -5,6 +5,15 @@
 
 ![Architecture Diagram](./DesignDocuments/architecture.png)
 
+## Instructions to Run the Project:
+1. Unzip the IoT_FinalSubmission_Agritech_Group2_DeepakSubashiniNagashreeSriram.zip
+2. Execute the Cloud Formation Command to create the Stack from the Agritech-main/config directory.
+3. First create the stack using the template - Agritech_Farm_Role_Creation.template which will fail due to the Rules for IoT being added. Roll back the Stack and Delete the Stack by accpeting to leave the Roles created.
+4. Next create the stack using the template - Agritech_Farm_Role_Resource_Creation.template which will create the Resources and the Services.
+5. Through the console create a Thing and download the Device, Private, Public and the Root Certificate
+6. Update the Certificate in the file mqtt_config.json in the Agritech_main/config folder and also update the host name in the same file.
+7. Once this is done, then to start running the simulator go to the Agritech_main folder and execute the command python farm_manager.py
+8. Also upload the zip file dep_package.zip into the lambda prior to running Step 7
 
 ## Design :
 
