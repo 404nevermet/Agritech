@@ -10,6 +10,20 @@ from decimal import Decimal
 import requests
 import time
 from botocore.exceptions import ClientError
+#from test_sprinkler import DYNAMODB_SPRINKLER_STATE_TABLE
+
+# Meta data that device sends during registration
+DYNAMODB_DEVICE_METADATA_TABLE = 'device_meta_data_table'
+# Computed zone-wise aggregated data
+DYNAMODB_AGGREGATE_DATA_TABLE = 'aggregate_data_table'
+# Alert situation data sent to sprinklers
+DYNAMODB_SPRINKLER_ALERTS_TABLE = 'sprinkler_alerts_table'
+# Sprinklers state management data
+DYNAMODB_SPRINKLER_STATUS_TABLE = 'sprinkler_state_table'
+
+THRESHOLD_LOW_HUMIDITY = 40.0
+THRESHOLD_HIGH_HUMIDITY = 80.0
+THRESHOLD_TEMP = 25.0
 
 DBClient = boto3.client("dynamodb", region_name="us-east-1")
 DBResource = boto3.resource("dynamodb", region_name="us-east-1")
@@ -73,7 +87,8 @@ def insertIntoSprinklerDynamoTable(db_name, newRecord):
         print(e.response["Error"]['Message'])
 
 def checkAndCreateAggrTable(db_name):
-    db_name = "agro_agg_data_table"
+    #db_name = "agro_agg_data_table"
+    db_name = DYNAMODB_AGGREGATE_DATA_TABLE
     DBName = db_name
     DBTable = None  # self._DBResource.Table(db_name)
     listResponse = DBClient.list_tables()
@@ -83,7 +98,8 @@ def checkAndCreateAggrTable(db_name):
         DBTable = DBResource.Table(db_name)
         print("Table already existing 2->", DBTable)
     else:
-        DBTable = "agro_agg_data_table"
+        #DBTable = "agro_agg_data_table"
+        DBTable = DYNAMODB_AGGREGATE_DATA_TABLE
         print("Table does not exist. Creation in Progress->", DBTable)
         # DBTable = None
         aggrAttrDef = [
@@ -107,7 +123,8 @@ def checkAndCreateAggrTable(db_name):
         return DBName
 
 def checkAndCreateSprinklerTable(db_name):
-    db_name = "sprinkler_status_on_events_table"
+    #db_name = "sprinkler_status_on_events_table"
+    db_name = DYNAMODB_SPRINKLER_ALERTS_TABLE
     DBName = db_name
     DBTable = None  # self._DBResource.Table(db_name)
     listResponse = DBClient.list_tables()
@@ -117,7 +134,8 @@ def checkAndCreateSprinklerTable(db_name):
         DBTable = DBResource.Table(db_name)
         print("Table already existing 2->", DBTable)
     else:
-        DBTable = "sprinkler_status_on_events_table"
+        #DBTable = "sprinkler_status_on_events_table"
+        DBTable = DYNAMODB_SPRINKLER_ALERTS_TABLE
         print("Table does not exist. Creation in progress->", DBTable)
         # DBTable = None
         aggrAttrDef = [
@@ -141,7 +159,8 @@ def checkAndCreateSprinklerTable(db_name):
         return DBName
 
 def checkAndCreateSprinklerStateTable(db_name):
-    db_name = "sprinkler_zone_state_table"
+    #db_name = "sprinkler_zone_state_table"
+    db_name = DYNAMODB_SPRINKLER_STATUS_TABLE
     DBName = db_name
     DBTable = None  # self._DBResource.Table(db_name)
     listResponse = DBClient.list_tables()
@@ -151,7 +170,8 @@ def checkAndCreateSprinklerStateTable(db_name):
         DBTable = DBResource.Table(db_name)
         print("Table already existing 2->", DBTable)
     else:
-        DBTable = "sprinkler_zone_state_table"
+        #DBTable = "sprinkler_zone_state_table"
+        DBTable = DYNAMODB_SPRINKLER_STATUS_TABLE
         print("Table does not exist. Creation in Progress->", DBTable)
         # DBTable = None
         aggrAttrDef = [
@@ -298,23 +318,23 @@ def publishMQTTMessage(msgTopic, msgPayload):
     # Change topic, qos and payload
     print("Before Publishing")
     response = client_iot.publish(topic=msgTopic, qos=1, payload=msgPayload)
-    time.sleep(10)
+    time.sleep(5)
     print("After Publishing")
 
 def lambda_handler(event, context):
     print("Start Lambda")
     # sns_client = boto3.client('sns')
-    db_name = "agro_agg_data_table"
-    DBName = checkAndCreateAggrTable(db_name)
 
-    db_name1 = "sprinkler_status_on_events_table"
-    DBName = checkAndCreateSprinklerTable(db_name1)
+    db_name = DYNAMODB_AGGREGATE_DATA_TABLE
+    db_name1 = DYNAMODB_SPRINKLER_ALERTS_TABLE
+    db_name2 = DYNAMODB_SPRINKLER_STATUS_TABLE
+    table_name = DYNAMODB_DEVICE_METADATA_TABLE
 
-    db_name2 = "sprinkler_zone_state_table"
-    DBName = checkAndCreateSprinklerStateTable(db_name2)
+    DBName = checkAndCreateAggrTable(DYNAMODB_AGGREGATE_DATA_TABLE)
+    DBName = checkAndCreateSprinklerTable(DYNAMODB_SPRINKLER_ALERTS_TABLE)
+    DBName = checkAndCreateSprinklerStateTable(DYNAMODB_SPRINKLER_STATUS_TABLE)
+    data1 = get_data(DYNAMODB_DEVICE_METADATA_TABLE)
 
-    table_name = "device_meta_data_table"
-    data1 = get_data(table_name)
     data = []
     for record in event['Records']:
         payload = base64.b64decode(record["kinesis"]["data"])
@@ -340,8 +360,8 @@ def lambda_handler(event, context):
     aggr_data = get_aggeregate_data(data_with_zone)
     print("Output Data is ->", aggr_data)
 
-    THRESHOLD_HUMIDITY = 90.0
-    THRESHOLD_TEMP = 15.0
+    #THRESHOLD_HUMIDITY = 5.0
+    #THRESHOLD_TEMP = 24.0
     for record in aggr_data:
         newRecord = {
             "zoneId": {"S": str(record['zoneId'])},
@@ -350,12 +370,12 @@ def lambda_handler(event, context):
             "timestamp": {"S": timestamp},
             "avgValue": {"S": str(record['average'])},
         }
-        save_stat = insertIntoAggrDynamoTable(db_name, newRecord)
-        db_name1 = "sprinkler_status_on_events_table"
+        save_stat = insertIntoAggrDynamoTable(DYNAMODB_AGGREGATE_DATA_TABLE, newRecord)
+
         currdateandtime = datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
-        if (float(record['average']) < THRESHOLD_HUMIDITY):
+        if (float(record['average']) < THRESHOLD_LOW_HUMIDITY):
             print("Soil Humidity is very Lower - ", record['average'], "% than the Threshold - ",
-                  str(THRESHOLD_HUMIDITY), "%. Switch ON the Sprinkler in Zone - ", record['zoneId'])
+                  str(THRESHOLD_LOW_HUMIDITY), "%. Switch ON the Sprinkler in Zone - ", record['zoneId'])
             info_wthr = get_weather_info(lat, lon)
             if (float(info_wthr['celsius']) > THRESHOLD_TEMP):
                 newRecord = {
@@ -366,22 +386,22 @@ def lambda_handler(event, context):
                     "timestamp": {"S": timestamp},
                     "avgMoistureValue": {"S": str(record['average'])},
                     "avgTempValue": {"S": str(info_wthr['celsius'])},
-                    "thresholdHumidity": {"S": str(THRESHOLD_HUMIDITY)},
+                    "thresholdHumidity": {"S": str(THRESHOLD_LOW_HUMIDITY)},
                     "thresholdTemp": {"S": str(THRESHOLD_TEMP)},
                     "sprinklerStatus": {"S": "ON"}
                 }
-                save_stat = insertIntoSprinklerDynamoTable(db_name1, newRecord)
+                save_stat = insertIntoSprinklerDynamoTable(DYNAMODB_SPRINKLER_ALERTS_TABLE, newRecord)
                 # Update the STate of the Sprinkler by maintaining against the Zone. 1 Row per Zone
-                return_stat = insertOrUpdateIntoSprinklerStateDynamoTable(db_name2, str(record['zoneId']), "ON")
-                return_item = get_data_with_key(db_name2, str(record['zoneId']))
+                return_stat = insertOrUpdateIntoSprinklerStateDynamoTable(DYNAMODB_SPRINKLER_STATUS_TABLE, str(record['zoneId']), "ON")
+                return_item = get_data_with_key(DYNAMODB_SPRINKLER_STATUS_TABLE, str(record['zoneId']))
                 if (return_item['State'] != "ON"):
                     mesgTopic = "actuator/command/set-state/" + str(record['zoneId'])
                     mesgPayload = json.dumps({"State": "ON"})
                     publishMQTTMessage(mesgTopic, mesgPayload)
 
-        if (float(record['average']) > THRESHOLD_HUMIDITY):
+        if (float(record['average']) > THRESHOLD_HIGH_HUMIDITY):
             print("Soil Humidity is Higher - ", record['average'], "% than the Threshold - ",
-                  str(THRESHOLD_HUMIDITY), "%. Switch OFF the Sprinkler in Zone - ", record['zoneId'])
+                  str(THRESHOLD_HIGH_HUMIDITY), "%. Switch OFF the Sprinkler in Zone - ", record['zoneId'])
             info_wthr = get_weather_info(lat, lon)
             if (float(info_wthr['celsius']) < THRESHOLD_TEMP):
                 newRecord = {
@@ -392,14 +412,14 @@ def lambda_handler(event, context):
                     "timestamp": {"S": timestamp},
                     "avgMoistureValue": {"S": str(record['average'])},
                     "avgTempValue": {"S": str(info_wthr['celsius'])},
-                    "thresholdHumidity": {"S": str(THRESHOLD_HUMIDITY)},
+                    "thresholdHumidity": {"S": str(THRESHOLD_HIGH_HUMIDITY)},
                     "thresholdTemp": {"S": str(THRESHOLD_TEMP)},
                     "sprinklerStatus": {"S": "OFF"}
                 }
-                save_stat = insertIntoSprinklerDynamoTable(db_name1, newRecord)
+                save_stat = insertIntoSprinklerDynamoTable(DYNAMODB_SPRINKLER_ALERTS_TABLE, newRecord)
                 # Update the STate of the Sprinkler by maintaining against the Zone. 1 Row per Zone
-                return_stat = insertOrUpdateIntoSprinklerStateDynamoTable(db_name2, str(record['zoneId']), "ON")
-                return_item = get_data_with_key(db_name2, str(record['zoneId']))
+                return_stat = insertOrUpdateIntoSprinklerStateDynamoTable(DYNAMODB_SPRINKLER_STATUS_TABLE, str(record['zoneId']), "OFF")
+                return_item = get_data_with_key(DYNAMODB_SPRINKLER_STATUS_TABLE, str(record['zoneId']))
                 if (return_item['State'] != "OFF"):
                     mesgTopic = "actuator/command/set-state/" + str(record['zoneId'])
                     mesgPayload = json.dumps({"State": "OFF"})
