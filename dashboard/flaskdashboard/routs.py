@@ -9,8 +9,8 @@ from datetime import datetime, timedelta
 from boto3.dynamodb.conditions import Key, Attr
 
 
-DYNAMODB_SPRINKLER_STATE_TABLE = "sprinkler_state"
-DYNAMODB_AGGREGATE_DATA_TABLE ="aggregate_data"
+DYNAMODB_SPRINKLER_STATE_TABLE = "sprinkler_state_table"
+DYNAMODB_AGGREGATE_DATA_TABLE ="aggregate_data_table"
 
 colorArray = ['#FFC107', '#DC3545',"#0DCAF0","#198754", "#0D6EFD",
             '#FF6633', '#FFB399', '#FF33FF', '#FFFF99', '#00B3E6', 
