@@ -18,18 +18,12 @@
             "Type": "String",
             "Default": "device_meta_data_table"
         },
-		"AggregateDataTableName": {
-            "Type": "String",
-            "Default": "aggregate_data_table"
-        },
+
         "TelemetryStreamName": {
             "Type": "String",
             "Default": "telemetry_data_stream"
         },
-		"DeviceMetaDataStreamName": {
-            "Type": "String",
-            "Default": "device_metadata_data_stream"
-        },
+
         "TelemetryDataProcessAndStorageRoleName": {
             "Type": "String",
             "Default": "TelemetryDataProcessAndStorageRole"
@@ -171,7 +165,9 @@
                             "Effect": "Allow",
                             "Action": [
 								"iot:Publish",
-								"iot:*",
+                                "iot:Receive",
+                                "iot:DescribeEndpoint",
+                                "iot:*",
                                 "kinesis:PutRecord",
 				"dynamodb:*",
                                 "logs:*",
@@ -214,7 +210,9 @@
                             "Effect": "Allow",
                             "Action": [
 								"iot:Publish",
-								"iot:*",
+                                "iot:Receive",
+                                "iot:DescribeEndpoint",
+                                "iot:*",
 								"dynamodb:*",
                                 "logs:*",
 								"cloudwatch:PutMetricData"
@@ -265,7 +263,9 @@
                                 "iam:PassRole",
                                 "iam:CreateServiceLinkedRole",
                                 "iot:Publish",
-								"iot:*",
+                                "iot:Receive",
+                                "iot:DescribeEndpoint",
+                                "iot:*",
                                 "kms:DescribeKey",
                                 "kms:ListAliases",
                                 "lambda:CreateFunction",
@@ -378,19 +378,7 @@
                 }]
             }
         },
-		"DeviceMetaDataStream": {
-            "Type": "AWS::Kinesis::Stream",
-            "Properties": {
-                "Name": {
-                    "Ref": "DeviceMetaDataStreamName"
-                },
-                "ShardCount": 1,
-                "Tags": [{
-                    "Key": "Name",
-                    "Value": "TelemetryDataStream"
-                }]
-            }
-        },
+
 		"SensorRegisterDataRule": {
 			"Type": "AWS::IoT::TopicRule",
 			"Properties": {
@@ -409,7 +397,7 @@
 							"roleArn": { "Fn::GetAtt": ["DeviceMetaDataStorageRole", "Arn"] }
 						}
 					}
-				] 
+				]
 				}
 			}
 		},
@@ -421,13 +409,13 @@
 				},
 				"TopicRulePayload": {
 					"Sql": "SELECT * FROM 'sensor/data/telemetry'",
-					"RuleDisabled": false, 
+					"RuleDisabled": false,
 					"Actions": [
 					{
 						"Kinesis": {
-						"StreamName": "TelemetryDataStream", 
+						"StreamName": "TelemetryDataStream",
 						"PartitionKey": "${topic()}",
-						"roleArn": { "Fn::GetAtt": ["TelemetryDataProcessAndStorageRole", "Arn"] } 
+						"roleArn": { "Fn::GetAtt": ["TelemetryDataProcessAndStorageRole", "Arn"] }
 						}
 					},
 					{
@@ -435,12 +423,12 @@
 							"PutItem" : {
 								"TableName" : {"Ref": "TelemetryDataTableName"}
 							},
-							"roleArn": { "Fn::GetAtt": ["TelemetryDataProcessAndStorageRole", "Arn"] } 
+							"roleArn": { "Fn::GetAtt": ["TelemetryDataProcessAndStorageRole", "Arn"] }
 						}
-						
+
 					}
-				] 
-					
+				]
+
 				}
 			}
 		},
@@ -452,7 +440,7 @@
 				},
 				"TopicRulePayload": {
 					"Sql": "SELECT * FROM 'actuator/request/register'",
-					"RuleDisabled": false, 
+					"RuleDisabled": false,
 					"Actions": [
 					{
 						"DynamoDBv2": {
@@ -463,7 +451,7 @@
 						}
 					}
 				]
-					
+
 				}
 			}
 		},
@@ -475,7 +463,7 @@
 				},
 				"TopicRulePayload": {
 					"Sql": "SELECT * FROM 'actuator/command/set-state/zoneId'",
-					"RuleDisabled": false, 
+					"RuleDisabled": false,
 					"Actions": [
 					{
 						"DynamoDBv2": {
@@ -486,7 +474,7 @@
 						}
 					}
 				]
-					
+
 				}
 			}
 		},
@@ -497,6 +485,7 @@
                 "Role": { "Fn::GetAtt": ["TelemetryDataProcessorServiceRole", "Arn"] },
                 "Runtime": "python3.8",
                 "Handler": "index.lambda_handler",
+                "Timeout": 15,
                 "Code": {
                     "ZipFile": {
                         "Fn::Join": [

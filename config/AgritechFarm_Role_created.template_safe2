@@ -18,18 +18,12 @@
             "Type": "String",
             "Default": "device_meta_data_table"
         },
-		"AggregateDataTableName": {
-            "Type": "String",
-            "Default": "aggregate_data_table"
-        },
+
         "TelemetryStreamName": {
             "Type": "String",
             "Default": "telemetry_data_stream"
         },
-		"DeviceMetaDataStreamName": {
-            "Type": "String",
-            "Default": "device_metadata_data_stream"
-        },
+
         "TelemetryDataProcessAndStorageRoleName": {
             "Type": "String",
             "Default": "TelemetryDataProcessAndStorageRole-2"
@@ -41,35 +35,8 @@
 		"TelemetryDataProcessorServiceRoleName": {
             "Type": "String",
             "Default": "TelemetryDataProcessorServiceRole-2"
-        },
-		"SensorRegisterDataRuleName": {
-            "Type": "String",
-            "Default": "SensorRegisterDataRule"
-        },
-		"SensorRegisterResponseDataRuleName": {
-            "Type": "String",
-            "Default": "SensorRegisterResponseDataRule"
-        },
-		"SensorTelemetryDataRuleName": {
-            "Type": "String",
-            "Default": "SensorTelemetryDataRule"
-        },
-		"SprinklerRegisterDataRuleName": {
-            "Type": "String",
-            "Default": "SprinklerRegisterDataRuleName"
-        },
-		"SprinklerRegisterResponseDataRuleName": {
-            "Type": "String",
-            "Default": "SprinklerRegisterResponseDataRule"
-        },
-		"SprinklerSetStateDataRuleName": {
-            "Type": "String",
-            "Default": "SprinklerSetStateDataRule"
-        },
-		"SprinklerSetStateResponseDataRuleName": {
-            "Type": "String",
-            "Default": "SprinklerSetStateResponseDataRule"
         }
+
     },
     "Resources": {
 		"SMThing1":{
@@ -171,7 +138,9 @@
                             "Effect": "Allow",
                             "Action": [
 								"iot:Publish",
-								"iot:*",
+                                "iot:Receive",
+                                "iot:DescribeEndpoint",
+                                "iot:*",
                                 "kinesis:PutRecord",
 				"dynamodb:*",
                                 "logs:*",
@@ -214,7 +183,9 @@
                             "Effect": "Allow",
                             "Action": [
 								"iot:Publish",
-								"iot:*",
+                                "iot:Receive",
+                                "iot:DescribeEndpoint",
+                                "iot:*",
 								"dynamodb:*",
                                 "logs:*",
 								"cloudwatch:PutMetricData"
@@ -257,6 +228,10 @@
                             "Action": [
                                 "logs:CreateLogStream",
                                 "logs:PutLogEvents",
+                                "iot:Publish",
+                                "iot:Receive",
+                                "iot:DescribeEndpoint",
+                                "iot:*",
                                 "kinesis:*",
                                 "dynamodb:*",
                                 "cloudwatch:*",
@@ -376,20 +351,6 @@
                 }]
             }
         },
-		"DeviceMetaDataStream": {
-            "Type": "AWS::Kinesis::Stream",
-            "Properties": {
-                "Name": {
-                    "Ref": "DeviceMetaDataStreamName"
-                },
-                "ShardCount": 1,
-                "Tags": [{
-                    "Key": "Name",
-                    "Value": "TelemetryDataStream"
-                }]
-            }
-        },
-
 
         "TelemetryDataProcessor": {
             "Type": "AWS::Lambda::Function",
@@ -398,6 +359,7 @@
                 "Role": { "Fn::GetAtt": ["TelemetryDataProcessorServiceRole", "Arn"] },
                 "Runtime": "python3.8",
                 "Handler": "index.lambda_handler",
+                "Timeout": 15,
                 "Code": {
                     "ZipFile": {
                         "Fn::Join": [
